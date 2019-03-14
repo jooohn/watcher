@@ -1,0 +1,12 @@
+package me.jooohn.watcher.plugins.source.screenshot
+
+import java.awt.image.BufferedImage
+
+import me.jooohn.watcher.plugins.Tolerance
+import org.http4s.Uri
+
+case class ScreenshotAttributes(
+  uri: Uri,
+  selector: Option[String],
+  tolerance: Tolerance[BufferedImage]
+)
