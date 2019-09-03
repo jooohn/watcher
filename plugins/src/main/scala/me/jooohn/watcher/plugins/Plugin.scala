@@ -1,9 +1,13 @@
 package me.jooohn.watcher.plugins
 
+import java.util.concurrent.TimeUnit
+
 import io.circe.{Decoder, Json}
 import io.circe.generic.semiauto.deriveDecoder
 import me.jooohn.watcher.domain.{Sink, Source}
 import me.jooohn.watcher.port.BuildResult
+
+import scala.concurrent.duration.FiniteDuration
 
 sealed trait Plugin[D, R] {
 
@@ -25,7 +29,7 @@ final case class PluginName(value: String) {
   override def toString: String = value
 }
 
-final case class SourceDefinition[D](plugin: PluginName, attributes: D)
+final case class SourceDefinition[D](`type`: PluginName, params: D)
 object SourceDefinition {
 
   implicit val sourceDefinitionDecoder: Decoder[SourceDefinition[Json]] =
@@ -33,7 +37,7 @@ object SourceDefinition {
 
 }
 
-final case class SinkDefinition[D](plugin: PluginName, attributes: D)
+final case class SinkDefinition[D](`type`: PluginName, params: D)
 object SinkDefinition {
 
   implicit val sinkDefinitionDecoder: Decoder[SinkDefinition[Json]] =
@@ -42,9 +46,18 @@ object SinkDefinition {
 }
 
 final case class WatcherDefinition[D](
-  source: SourceDefinition[D],
-  sink: SinkDefinition[D],
-)
+    intervalMinutes: Option[Int],
+    source: SourceDefinition[D],
+    sink: SinkDefinition[D],
+) {
+  val defaultIntervalMinutes: Int = 15
+
+  def interval: FiniteDuration =
+    FiniteDuration(
+      intervalMinutes.getOrElse(defaultIntervalMinutes),
+      TimeUnit.MINUTES)
+
+}
 object WatcherDefinition {
 
   implicit val watcherDefinitionDecoder: Decoder[WatcherDefinition[Json]] =

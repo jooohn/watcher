@@ -13,13 +13,12 @@ import me.jooohn.watcher.port.Scheduler
 
 import scala.concurrent.duration.FiniteDuration
 
-final class ConcurrentScheduler[F[_]: Sync: Concurrent: Timer: Logger](tasksRef: Ref[F, List[Fiber[F, Unit]]])
+final class ConcurrentScheduler[F[_]: Sync: Concurrent: Timer: Logger](
+    tasksRef: Ref[F, List[Fiber[F, Unit]]])
     extends Scheduler[F] {
 
   val logger: Logger[F] =
     Logger[F].withModifiedString(message => s"$getClass: $message")
-
-  val duration: FiniteDuration = FiniteDuration(15, TimeUnit.SECONDS)
 
   override def schedule(watchers: List[Watcher[F]]): F[Unit] = {
     def watch(watcher: Watcher[F]) = {
@@ -42,12 +41,11 @@ final class ConcurrentScheduler[F[_]: Sync: Concurrent: Timer: Logger](tasksRef:
           result <- attempt(prev)
           next <- result match {
             case Left(e) =>
-              logger.error(e)(s"failed to check") >> Sync[F].pure(prev)
+              logger.error(e)(s"check failed") >> Sync[F].pure(prev)
             case Right(s) =>
-              logger.info(s"successfully checked source") >> Sync[F].pure(
-                Some(s))
+              logger.info(s"check succeeded") >> Sync[F].pure(Some(s))
           }
-          _ <- Timer[F].sleep(duration)
+          _ <- Timer[F].sleep(watcher.interval)
           _ <- loop(next)
         } yield ()
       Concurrent[F].start(loop(None))

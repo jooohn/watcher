@@ -13,7 +13,7 @@ import me.jooohn.watcher.domain.UUIDIssuer
 import me.jooohn.watcher.plugins.JsonPluginsDsl
 import me.jooohn.watcher.plugins.helper.{HandlebarsRenderer, Renderer}
 import me.jooohn.watcher.plugins.source.screenshot.ScreenshotTaker
-import me.jooohn.watcher.usecase.ScheduleWatch
+import me.jooohn.watcher.usecase.StartWatching
 import org.apache.log4j.BasicConfigurator
 import org.http4s.{HttpApp, Uri}
 import org.http4s.implicits._
@@ -36,22 +36,25 @@ object Main extends IOApp with JsonPluginsDsl[IO] {
 
     implicit val screenshotTaker: ScreenshotTaker[IO] =
       new ScreenshotTaker[IO](
-        Uri.uri("https://rendertron-selector.herokuapp.com/"))
+        Uri.uri("https://rendertron-selector.herokuapp.com/")
+      )
 
     implicit val renderer: Renderer[IO] =
       new HandlebarsRenderer[IO](
-        Uri.uri("https://handlebars-web-api.herokuapp.com/"))
-
+        Uri.uri("https://handlebars-web-api.herokuapp.com/")
+      )
 
     def buildApp(tasksRef: Ref[IO, List[Fiber[IO, Unit]]]): HttpApp[IO] = {
-      val scheduleWatch =
-        ScheduleWatch(
+      val startWatching =
+        StartWatching(
           scheduler = new ConcurrentScheduler[IO](tasksRef),
           watcherBuilder = watcherBuilder
+            .use(sourcePlugins.html)
             .use(sourcePlugins.screenshot)
+            .use(sourcePlugins.now)
             .use(sinkPlugins.slack)
         )
-      WatchersService(scheduleWatch).orNotFound
+      WatchersService(startWatching).orNotFound
     }
 
     for {

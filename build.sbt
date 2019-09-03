@@ -4,6 +4,7 @@ lazy val http4sVersion = "0.20.0-M5"
 lazy val fs2Version = "1.0.3"
 lazy val circeVersion = "0.11.1"
 lazy val log4catsVersion = "0.3.0-M2"
+lazy val scalaScraperVersion = "2.1.0"
 
 lazy val commonSettings = Seq(
   version := "0.1",
@@ -85,6 +86,7 @@ lazy val plugins = (project in file("plugins"))
       "io.chrisdavenport" %% "log4cats-extras" % log4catsVersion,
       "io.chrisdavenport" %% "log4cats-slf4j" % log4catsVersion,
       "org.slf4j" % "slf4j-log4j12" % "1.7.25",
+      "net.ruippeixotog" %% "scala-scraper" % "2.1.0",
     ),
   )
   .dependsOn(infrastructure, port)

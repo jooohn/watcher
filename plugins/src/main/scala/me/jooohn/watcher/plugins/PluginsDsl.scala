@@ -13,7 +13,7 @@ trait PluginsDsl[F[_], A] {
   def rootDecode: Decode[A, List[WatcherDefinition[A]]]
 
   def watcherBuilder(implicit M: Monad[F],
-              U: UUIDIssuer[F]): PluginWatcherBuilder[F, A] =
+                     U: UUIDIssuer[F]): PluginWatcherBuilder[F, A] =
     PluginWatcherBuilderImpl(
       sourcePlugins = Nil,
       sinkPlugins = Nil,
@@ -25,7 +25,8 @@ trait PluginsDsl[F[_], A] {
 object PluginsDsl {
 
   def apply[F[_], A](
-      implicit D: Decode[A, List[WatcherDefinition[A]]]): PluginsDsl[F, A] =
+    implicit D: Decode[A, List[WatcherDefinition[A]]]
+  ): PluginsDsl[F, A] =
     new PluginsDsl[F, A] {
 
       override def rootDecode: Decode[A, List[WatcherDefinition[A]]] = D

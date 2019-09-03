@@ -16,11 +16,12 @@ import io.circe.generic.auto._
 
 trait SlackSink[F[_], A] {
 
-  def slack(implicit D: Decode[A, SlackAttributes],
-            logger: Logger[F],
-            renderer: Renderer[F],
-            C: ConcurrentEffect[F],
-            ex: ExecutionContext): SinkPlugin[F, A] = new SinkPlugin[F, A] {
+  def slack(
+      implicit D: Decode[A, SlackParams],
+      logger: Logger[F],
+      renderer: Renderer[F],
+      C: ConcurrentEffect[F],
+      ex: ExecutionContext): SinkPlugin[F, A] = new SinkPlugin[F, A] {
 
     val incomingWebhook: IncomingWebhook[F] = new IncomingWebhook[F]
 
@@ -31,14 +32,15 @@ trait SlackSink[F[_], A] {
         Kleisli { context =>
           for {
             text <- renderer.render(dto.template, context.asJson)
-            _ <- incomingWebhook.post(dto.incomingWebhookUrl,
-                                      Payload(
-                                        channel = dto.channel,
-                                        text = text,
-                                        username = dto.username,
-                                        iconEmoji = dto.iconEmoji,
-                                        iconUrl = dto.iconUrl
-                                      ))
+            _ <- incomingWebhook.post(
+              dto.incomingWebhookUrl,
+              Payload(
+                channel = dto.channel,
+                text = text,
+                username = dto.username,
+                iconEmoji = dto.iconEmoji,
+                iconUrl = dto.iconUrl
+              ))
           } yield ()
         }
       }

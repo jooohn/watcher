@@ -6,7 +6,8 @@ import cats.implicits._
 import me.jooohn.watcher.domain.{UUIDIssuer, Watcher}
 import me.jooohn.watcher.port._
 
-private[plugins] trait PluginWatcherBuilder[F[_], D] extends WatcherBuilder[F, D] {
+private[plugins] trait PluginWatcherBuilder[F[_], D]
+    extends WatcherBuilder[F, D] {
 
   def use(sourcePlugin: SourcePlugin[F, D]): PluginWatcherBuilder[F, D]
 
@@ -14,7 +15,9 @@ private[plugins] trait PluginWatcherBuilder[F[_], D] extends WatcherBuilder[F, D
 
 }
 
-final private[plugins] case class PluginWatcherBuilderImpl[F[_]: Monad: UUIDIssuer, D](
+final private[plugins] case class PluginWatcherBuilderImpl[
+    F[_]: Monad: UUIDIssuer,
+    D](
     sourcePlugins: List[SourcePlugin[F, D]],
     sinkPlugins: List[SinkPlugin[F, D]],
     rootBuilder: RootBuilder[D]
@@ -34,11 +37,13 @@ final private[plugins] case class PluginWatcherBuilderImpl[F[_]: Monad: UUIDIssu
       watcherDefinitions <- rootBuilder.build(definition)
       watchers <- watcherDefinitions.parTraverse { watcherDefinition =>
         (
-          buildSource(watcherDefinition.source.plugin,
-                      watcherDefinition.source.attributes),
-          buildSink(watcherDefinition.sink.plugin,
-                    watcherDefinition.sink.attributes)
-        ).parMapN(Watcher(_, _))
+          buildSource(
+            watcherDefinition.source.`type`,
+            watcherDefinition.source.params),
+          buildSink(
+            watcherDefinition.sink.`type`,
+            watcherDefinition.sink.params)
+        ).parMapN(Watcher(watcherDefinition.interval, _, _))
       }
     } yield watchers
   )

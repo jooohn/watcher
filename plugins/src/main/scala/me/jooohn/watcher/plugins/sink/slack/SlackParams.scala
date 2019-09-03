@@ -2,7 +2,7 @@ package me.jooohn.watcher.plugins.sink.slack
 
 import org.http4s.Uri
 
-case class SlackAttributes(
+case class SlackParams(
   incomingWebhookUrl: Uri,
   template: String,
   username: Option[String],
