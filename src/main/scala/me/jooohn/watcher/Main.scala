@@ -23,10 +23,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 object Main extends IOApp with JsonPluginsDsl[IO] {
 
-  implicit val IOUUIDIssuer: UUIDIssuer[IO] =
-    new UUIDIssuer[IO] {
-      override def issue: IO[UUID] = IO(UUID.randomUUID())
-    }
+  implicit val IOUUIDIssuer: UUIDIssuer[IO] = UUIDIssuer.random[IO]
 
   override def run(args: List[String]): IO[ExitCode] = {
     BasicConfigurator.configure()
@@ -47,7 +44,7 @@ object Main extends IOApp with JsonPluginsDsl[IO] {
     def buildApp(tasksRef: Ref[IO, List[Fiber[IO, Unit]]]): HttpApp[IO] = {
       val startWatching =
         StartWatching(
-          scheduler = new ConcurrentScheduler[IO](tasksRef),
+          scheduler = new ConcurrentScheduler[IO](tasksRef, logger),
           watcherBuilder = watcherBuilder
             .use(sourcePlugins.html)
             .use(sourcePlugins.screenshot)

@@ -6,6 +6,8 @@ lazy val circeVersion = "0.11.1"
 lazy val log4catsVersion = "0.3.0-M2"
 lazy val scalaScraperVersion = "2.1.0"
 
+lazy val scalaTestVersion = "3.0.8"
+
 lazy val commonSettings = Seq(
   version := "0.1",
   scalaVersion := "2.12.8",
@@ -17,6 +19,8 @@ lazy val commonSettings = Seq(
   libraryDependencies ++= Seq(
     "org.typelevel" %% "cats-core" % catsVersion,
     "com.github.mpilquist" %% "simulacrum" % "0.15.0",
+    "org.scalatest" %% "scalatest" % scalaTestVersion % "test",
+
   ),
   resolvers += Resolver.sonatypeRepo("releases"),
   addSbtPlugin("com.geirsson" % "sbt-scalafmt" % "1.5.1"),
