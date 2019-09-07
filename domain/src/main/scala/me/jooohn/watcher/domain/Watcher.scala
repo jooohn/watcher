@@ -7,16 +7,13 @@ import cats.syntax.all._
 
 import scala.concurrent.duration.FiniteDuration
 
-final case class Watcher[F[_]: Monad: UUIDIssuer](
-    interval: FiniteDuration,
-    source: Source[F],
-    sink: Sink[F]) {
-  type SubjectSnapshot = Snapshot[source.Subject]
+final case class Watcher[F[_]: Monad: UUIDIssuer](interval: FiniteDuration, source: Source[F], sink: Sink[F]) {
+  final type SubjectSnapshot = Snapshot[source.Subject]
 
   private val unit: F[Unit] = Monad[F].pure(())
 
   def check(now: Instant, prev: Option[SubjectSnapshot]): F[SubjectSnapshot] = {
-    def takeCurrentSnapshot: F[SubjectSnapshot] =
+    def takeCurrentSnapshot: F[Snapshot[source.Subject]] =
       for {
         id <- UUIDIssuer[F].issue
         subject <- source.observe
@@ -30,9 +27,7 @@ final case class Watcher[F[_]: Monad: UUIDIssuer](
         }
       }
 
-    def onSubjectChanged(
-        prev: SubjectSnapshot,
-        current: SubjectSnapshot): F[Unit] =
+    def onSubjectChanged(prev: SubjectSnapshot, current: SubjectSnapshot): F[Unit] =
       sink.run(
         SinkContext(
           prev = prev.parameterizeWith(source.parameterize),

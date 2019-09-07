@@ -29,10 +29,21 @@ lazy val commonSettings = Seq(
     "org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
 )
 
-lazy val root = (project in file("."))
+lazy val root = (project in file(".")).aggregate(
+  main,
+  adapter,
+  controller,
+  plugins,
+  port,
+  usecase,
+  domain,
+  infrastructure,
+)
+
+lazy val main = (project in file("main"))
   .settings(commonSettings)
   .settings(
-    name := "watcher",
+    name := "watcher-main",
     libraryDependencies ++= Seq(
       "io.circe" %% "circe-parser" % circeVersion,
     ),
